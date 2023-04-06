@@ -1,0 +1,222 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class AVLTree {
+	public class Node {
+
+    int data;
+    Node left, right, parent;
+    int height, balance;
+    
+    public Node(int data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+        this.height = 1;
+        this.balance = 0;
+    }
+}
+    Node root;
+    
+    public AVLTree() {
+        this.root = null;
+    }
+    
+    public void add(int number) {
+        if (this.root == null) {
+            this.root = new Node(number);
+        } else {
+            this._addHelper(this.root, number);
+        }
+    }
+    
+    private void _addHelper(Node node, int number) {
+        if (number < node.data) {
+            if (node.left != null) {
+                this._addHelper(node.left, number);
+            } else {
+                node.left = new Node(number);
+                node.left.parent = node;
+                this.updateHeightAndBalance(node.left);
+                this.balanceTree(node.left);
+            }
+        } else if (number > node.data) {
+            if (node.right != null) {
+                this._addHelper(node.right, number);
+            } else {
+                node.right = new Node(number);
+                node.right.parent = node;
+                this.updateHeightAndBalance(node.right);
+                this.balanceTree(node.right);
+            }
+        } else {
+            // Number already exists in the tree
+        }
+    }
+    
+    public void print() {
+        if (this.root == null) {
+            System.out.println("Tree is empty");
+        } else {
+            Queue<Node> queue = new LinkedList<>();
+            queue.offer(this.root);
+            while (!queue.isEmpty()) {
+                int levelSize = queue.size();
+                for (int i = 0; i < levelSize; i++) {
+                    Node node = queue.poll();
+                    System.out.print("(" + node.data + ", " + node.balance + ") ");
+                    if (node.left != null) {
+                        queue.offer(node.left);
+                    }
+                    if (node.right != null) {
+                        queue.offer(node.right);
+                    }
+                }
+                System.out.println();
+            }
+        }
+    }
+    
+    private void updateHeightAndBalance(Node node) {
+        int leftHeight = node.left != null ? node.left.height : 0;
+        int rightHeight = node.right != null ? node.right.height : 0;
+        node.height = Math.max(leftHeight, rightHeight) + 1;
+        node.balance = rightHeight - leftHeight;
+    }
+    
+    private void balanceTree(Node node) {
+        if (node.balance == -2) {
+            if (node.left.balance == 1) {
+                this.rotateLeft(node.left);
+            }
+            this.rotateRight(node);
+        } else if (node.balance == 2) {
+            if (node.right.balance == -1) {
+                this.rotateRight(node.right);
+            }
+            this.rotateLeft(node);
+        }
+        if (node.parent != null) {
+            this.updateHeightAndBalance(node.parent);
+            this.balanceTree(node.parent);
+        } else {
+            this.updateHeightAndBalance(node);
+        }}
+        private void rotateLeft(Node node) {
+            Node parent = node.parent;
+            Node right = node.right;
+            Node rightLeft = right.left;
+            right.parent = parent;
+            if (parent != null) {
+                if (parent.left == node) {
+                    parent.left = right;
+                } else {
+                    parent.right = right;
+                }
+            } else {
+                this.root = right;
+            }
+            right.left = node;
+            node.parent = right;
+            node.right = rightLeft;
+            if (rightLeft != null) {
+                rightLeft.parent = node;
+            }
+            this.updateHeightAndBalance(node);
+            this.updateHeightAndBalance(right);
+        }
+            
+        private void rotateRight(Node node) {
+            Node parent = node.parent;
+            Node left = node.left;
+            Node leftRight = left.right;
+            left.parent = parent;
+            if (parent != null) {
+                if (parent.left == node) {
+                    parent.left = left;
+                } else {
+                    parent.right = left;
+                }
+            } else {
+                this.root = left;
+            }
+            left.right = node;
+            node.parent = left;
+            node.left = leftRight;
+            if (leftRight != null) {
+                leftRight.parent = node;
+            }
+            this.updateHeightAndBalance(node);
+            this.updateHeightAndBalance(left);
+        }
+    
+
+        public static void main(String[] args) {
+            AVLTree tree = new AVLTree();
+            
+            // Scenario 1 (single left rotation)
+            System.out.println("Scenario 1:");
+            tree.add(30);
+            tree.add(20);
+            tree.add(40);
+            tree.add(35);
+            tree.add(50);
+            tree.print();
+            
+            System.out.println("\nPerforming left rotation on node 30:");
+            tree.rotateLeft(tree.root);
+            tree.print();
+            
+            // Scenario 2 (single right rotation)
+            System.out.println("\nScenario 2:");
+            tree = new AVLTree();
+            tree.add(40);
+            tree.add(30);
+            tree.add(50);
+            tree.add(45);
+            tree.add(60);
+            tree.print();
+            
+            System.out.println("\nPerforming right rotation on node 40:");
+            tree.rotateRight(tree.root);
+            tree.print();
+            
+            // Scenario 3 (double left-right rotation)
+            System.out.println("\nScenario 3:");
+            tree = new AVLTree();
+            tree.add(50);
+            tree.add(30);
+            tree.add(60);
+            tree.add(55);
+            tree.add(70);
+            tree.print();
+            
+            System.out.println("\nPerforming left rotation on node 60:");
+            tree.rotateLeft(tree.root.right);
+            tree.print();
+            
+            System.out.println("\nPerforming right rotation on node 50:");
+            tree.rotateRight(tree.root);
+            tree.print();
+            
+            // Scenario 4 (double right-left rotation)
+            System.out.println("\nScenario 4:");
+            tree = new AVLTree();
+            tree.add(30);
+            tree.add(20);
+            tree.add(50);
+            tree.add(40);
+            tree.add(60);
+            tree.print();
+            
+            System.out.println("\nPerforming right rotation on node 50:");
+            tree.rotateRight(tree.root.right);
+            tree.print();
+            
+            System.out.println("\nPerforming left rotation on node 30:");
+            tree.rotateLeft(tree.root);
+            tree.print();
+        }}
+
+
